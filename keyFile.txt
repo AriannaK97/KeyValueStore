@@ -1,0 +1,6 @@
+name string
+age int
+height float
+street string
+level int
+surname string
