@@ -1,18 +1,23 @@
 public class TrieNode {
-    private static int NUM_OF_ALPHABET_LETTERS = 26;
+    private static int NUM_OF_SYMBOLS = 36;
 
-    private TrieNode[] children = new TrieNode[NUM_OF_ALPHABET_LETTERS];
+    private TrieNode[] children = new TrieNode[NUM_OF_SYMBOLS];
     private boolean isEndOfWord;
+    private String[] payload;
 
     TrieNode(){
         isEndOfWord = false;
-        for (int i = 0; i < NUM_OF_ALPHABET_LETTERS; i++){
+        for (int i = 0; i < NUM_OF_SYMBOLS; i++){
             children[i] = null;
         }
     }
 
     public TrieNode getChildrenInPosition(int index) {
         return children[index];
+    }
+
+    public String[] getChildrenPayload() {
+        return payload;
     }
 
     public void setChildrenInPosition(int index, TrieNode newNode) {
@@ -25,6 +30,12 @@ public class TrieNode {
 
     public void setEndOfWord(boolean endOfWord) {
         isEndOfWord = endOfWord;
+    }
+
+    public void setEndOfWordPayload(String[] payload){
+        if(this.isEndOfWord){
+            this.payload = payload;
+        }
     }
 
 
