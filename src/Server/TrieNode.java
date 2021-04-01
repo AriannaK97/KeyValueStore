@@ -1,3 +1,5 @@
+package Server;
+
 public class TrieNode {
     private static int NUM_OF_SYMBOLS = 36;
 

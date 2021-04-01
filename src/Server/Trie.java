@@ -1,3 +1,5 @@
+package Server;
+
 public class Trie {
 
     static TrieNode root;
