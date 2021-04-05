@@ -6,5 +6,5 @@ data storage paradigm designed for storing, retrieving, and managing associative
 structure more commonly known today as a dictionary or hash table. Dictionaries contain a collection of
 objects, or records, which in turn have many different fields within them, each containing data. These
 records are stored and retrieved using a key that uniquely identifies the record, and is used to find the
-data within the database. In our case, we will be using a [Trie](https://en.wikipedia.org/wiki/Trie) instead of a hash table for storing the
+data within the database. In our case, we will be using a [Server.Trie](https://en.wikipedia.org/wiki/Trie) instead of a hash table for storing the
 keys.

@@ -20,6 +20,27 @@ get_random_float(){
   echo "$first.$second"
 }
 
+get_available_keys(){
+  RANGE=$(< "$keyFile" wc -l) #number of lines is the range RANDOM can act
+  file="somefileondisk"
+  linesArray=`cat $keyFile`
+#  for line in $linesArray; do
+#          echo "$line"
+#  done
+  echo linesArray;
+}
+
+getUniqueKeyInLevel(){
+    linesArray=$(get_available_keys)
+
+    key = $linesArray[0]
+    while [ "$key"  "$linesArray" ]
+    do
+      key=$($RANDOM % ${#linesArray[@]})
+
+      done
+}
+
 get_random_key(){
   if [ "$curM" -gt 0 ]; then
     FLOOR=0;
@@ -32,7 +53,9 @@ get_random_key(){
       picker=$((($RANDOM % ($RANGE)+1)))
       #let "picker = $picker % $RANGE"  # Scales $number down within $RANGE.
     done
-    line=($(sed "${picker}q;d" "$keyFile"));
+
+
+
 
     if [ $chanceToNest -eq 0 ]; then
       curM=$(($curM - 1))
@@ -44,13 +67,13 @@ get_random_key(){
           val="$val; $(get_random_key)"
         fi
       }
-      echo "\"${line[0]}\" : { $val }"
-    elif [ "${line[1]}" = "int" ]; then
-      echo "\"${line[0]}\" : \"$(get_random_int)\""
-    elif [ "${line[1]}" = "string" ]; then
-      echo "\"${line[0]}\" : \"$(get_random_string)\""
-    elif [ "${line[1]}" = "float" ]; then
-      echo "\"${line[0]}\" : \"$(get_random_float)\""
+      echo "\"${key[0]}\" : { $val }"
+    elif [ "${key[1]}" = "int" ]; then
+      echo "\"${key[0]}\" : \"$(get_random_int)\""
+    elif [ "${key[1]}" = "string" ]; then
+      echo "\"${key[0]}\" : \"$(get_random_string)\""
+    elif [ "${key[1]}" = "float" ]; then
+      echo "\"${key[0]}\" : \"$(get_random_float)\""
     fi
   fi
 }

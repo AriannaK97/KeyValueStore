@@ -12,10 +12,6 @@ public class PortIPManager {
     private int totalNumOfServers;
     private static final Map<Integer, ServerCredentials> IP_PortMap = new HashMap<>();
 
-    public Map<Integer, ServerCredentials> getIP_PortMap() {
-        return IP_PortMap;
-    }
-
     class ServerCredentials{
         private InetAddress ip;
         private int port;
@@ -63,6 +59,10 @@ public class PortIPManager {
 
     }
 
+    public Map<Integer, ServerCredentials> getIP_PortMap() {
+        return IP_PortMap;
+    }
+
     public void checkOnlineServers(int k){
         int onlineServerCounter = 0;
         for (Map.Entry<Integer, ServerCredentials> entry : IP_PortMap.entrySet()){
@@ -91,7 +91,7 @@ public class PortIPManager {
             currentLine = sc.nextLine();
             splitArray = currentLine.split(" ");
             newCredentials = new ServerCredentials(InetAddress.getByName(splitArray[0]), Integer.parseInt(splitArray[1]));
-            this.IP_PortMap.put(id, newCredentials);
+            IP_PortMap.put(id, newCredentials);
             id+=1;
         }
 

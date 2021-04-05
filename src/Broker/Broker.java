@@ -55,7 +55,6 @@ public class Broker {
                     //System.out.println(entry.getValue().getPort() + " " + str);
 
                 }
-
             }
 
         }catch (IOException e) {
@@ -69,6 +68,7 @@ public class Broker {
      * online servers given that enough of them are online.
      * */
     private static void dispatchCommandToServers() throws IOException {
+
         Map<Integer, ServerCredentials> PortMap = portIPManager.getIP_PortMap();
         Scanner sc = new Scanner(new InputStreamReader(System.in));
         ServerCredentials serverCredentials;

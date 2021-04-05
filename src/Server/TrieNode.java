@@ -1,11 +1,12 @@
 package Server;
 
 public class TrieNode {
-    private static int NUM_OF_SYMBOLS = 36;
+    private static int NUM_OF_SYMBOLS = 62;
 
     private TrieNode[] children = new TrieNode[NUM_OF_SYMBOLS];
     private boolean isEndOfWord;
-    private String[] payload;
+    private String payload = "-";
+    private Trie payloadTree;
 
     TrieNode(){
         isEndOfWord = false;
@@ -18,11 +19,16 @@ public class TrieNode {
         return children[index];
     }
 
-    public String[] getChildrenPayload() {
-        return payload;
+    public String getChildrenPayload() {
+        if(this.payloadTree == null)
+            return payload;
+        else{
+            return null;
+        }
     }
 
     public void setChildrenInPosition(int index, TrieNode newNode) {
+
         this.children[index] = newNode;
     }
 
@@ -34,11 +40,17 @@ public class TrieNode {
         isEndOfWord = endOfWord;
     }
 
-    public void setEndOfWordPayload(String[] payload){
+    public void setEndOfWordPayload(String payload){
         if(this.isEndOfWord){
             this.payload = payload;
         }
     }
 
+    public Trie getPayloadTree() {
+        return payloadTree;
+    }
 
+    public void setPayloadTree(Trie payloadTree) {
+        this.payloadTree = payloadTree;
+    }
 }
