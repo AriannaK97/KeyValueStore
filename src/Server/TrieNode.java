@@ -15,6 +15,10 @@ public class TrieNode {
         }
     }
 
+    public boolean hasPayloadTree(){
+        return this.payloadTree != null;
+    }
+
     public TrieNode getChildrenInPosition(int index) {
         return children[index];
     }

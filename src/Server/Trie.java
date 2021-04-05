@@ -71,36 +71,45 @@ public class Trie {
         }
 
         if (!pCrawl.isEndOfWord())
-            composedAnswer = searchSubTree(pCrawl.getPayloadTree().getRoot()) ;
+            composedAnswer = searchSubTree(pCrawl.getPayloadTree().getRoot(), "", 0) ;
         else
             composedAnswer = pCrawl.getChildrenPayload();
 
         return composedAnswer;
     }
 
-    public String searchSubTree(TrieNode currentRoot){
+    public String searchSubTree(TrieNode currentRoot, String prevCharInTrie, int numOfKeysInPrevLevel){
         String composedAnswer = "";
-        String currentString;
+        String currentString, currentChar;
+        TrieNode pCrawl;
+        int numOfKeysInLevel = 0;
         int key;
         int index;
 
         for(index = 0; index < NUM_OF_SYMBOLS; index++){
-            if( currentRoot.getChildrenInPosition(index) == null){
-                composedAnswer += "";
-            }else {
-                key = (index + 'a' >= 97) && ((index + 'a' <= 122)) ? index + 'a' : (index + 'A' - 26 >= 65) && (index + 'A' - 26 <= 90) ? index + 'A' - 26 : index + '0' - 36;
-                composedAnswer += Character.toString(key);
-                composedAnswer += searchSubTree(currentRoot.getChildrenInPosition(index));
+            if( currentRoot.getChildrenInPosition(index) != null){
+                numOfKeysInLevel += 1;
+                key = (index + 'a' >= 97) && ((index + 'a' <= 122)) ? index + 'a' : (index + 'A' - 26 >= 65)
+                        && (index + 'A' - 26 <= 90) ? index + 'A' - 26 : index + '0' - 36;
+                currentChar = Character.toString(key);
+                pCrawl = currentRoot.getChildrenInPosition(index);
+                if(numOfKeysInLevel > 1){
+                    currentChar = prevCharInTrie + currentChar;
+                }
+                if(pCrawl.hasPayloadTree()){
+                    composedAnswer += currentChar + " : { " + searchSubTree(currentRoot.getChildrenInPosition(index).getPayloadTree().getRoot(), currentChar, numOfKeysInLevel) + " } ";
+                }else {
+                    composedAnswer += currentChar + searchSubTree(currentRoot.getChildrenInPosition(index), currentChar, numOfKeysInLevel);
+                }
             }
         }
 
-        //if(currentRoot.isEndOfWord()) {
-            currentString = currentRoot.getChildrenPayload();
-            if (currentString == null)
-                composedAnswer += " : { } ";
-            else if (!currentString.equals("-"))
-                composedAnswer += " : \"" + currentString + "\"";
-        //}
+        currentString = currentRoot.getChildrenPayload();
+        if (currentString == null)
+            composedAnswer += " : { } ";
+        else if (!currentString.equals("-"))
+            composedAnswer += " : \"" + currentString + "\" ";
+
         return composedAnswer;
     }
 
