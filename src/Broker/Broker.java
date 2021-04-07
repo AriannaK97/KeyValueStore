@@ -74,6 +74,7 @@ public class Broker {
         ServerCredentials serverCredentials;
         String command;
         String str = "";
+        boolean answeredQuery = false;
 
         System.out.println("Type next command . . .");
         command = sc.nextLine();
@@ -94,15 +95,25 @@ public class Broker {
                         entry.getValue().getSocket().close();
                     }
 
-                    System.out.println("Server with IPAddress " + serverCredentials.getIp() + " listening to port "
-                            + serverCredentials.getPort() + " answered:\n\t" + str);
+                    if(!answeredQuery && !str.contains("NOT FOUND") && !str.equals("stop")) {
+                        answeredQuery = true;
+                        System.out.println("Server with IPAddress " + serverCredentials.getIp() + " listening to port "
+                                + serverCredentials.getPort() + " answered:\n\t" + str);
+                    }
+
                 }
                 catch (Exception e){
                     Logger.getLogger("ExceptionLog");
                     entry.getValue().setOnline(false);
                     portIPManager.checkOnlineServers(k);
                 }
+
             }
+
+            if(!answeredQuery)
+                System.out.println("NOT FOUND");
+
+            answeredQuery=false;
             System.out.println("Type next command . . .");
             command = sc.nextLine();
         }

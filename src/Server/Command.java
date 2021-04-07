@@ -120,7 +120,7 @@ public class Command {
     }
 
     private String get(String commandTail){
-        return (commandTail + " : {" + this.trie.search(commandTail, this.trie) + " }");
+        return (commandTail + " : {" + this.trie.search(commandTail, this.trie) + "}");
     }
 
     private String delete(String commandTail){

@@ -97,9 +97,11 @@ public class Trie {
                     currentChar = prevCharInTrie + currentChar;
                 }
                 if(pCrawl.hasPayloadTree()){
-                    composedAnswer += currentChar + " : { " + searchSubTree(currentRoot.getChildrenInPosition(index).getPayloadTree().getRoot(), currentChar, numOfKeysInLevel) + " } ";
+                    composedAnswer += currentChar + " : {" + searchSubTree(currentRoot.getChildrenInPosition(index).getPayloadTree().getRoot(), currentChar, numOfKeysInLevel) + "}; ";
+                    numOfKeysInLevel = 0;
                 }else {
                     composedAnswer += currentChar + searchSubTree(currentRoot.getChildrenInPosition(index), currentChar, numOfKeysInLevel);
+                    numOfKeysInLevel = 0;
                 }
             }
         }
@@ -108,7 +110,7 @@ public class Trie {
         if (currentString == null)
             composedAnswer += " : { } ";
         else if (!currentString.equals("-"))
-            composedAnswer += " : \"" + currentString + "\" ";
+            composedAnswer += " : \"" + currentString + "\"; ";
 
         return composedAnswer;
     }
@@ -134,12 +136,18 @@ public class Trie {
         }
 
         depth+=1;
-        if(depth < arraySize && pCrawl.getChildrenPayload()==null)
+
+        if(depth < arraySize && pCrawl.getChildrenPayload()==null) {
             composedAnswer += querySearch(keysArray, depth, pCrawl.getPayloadTree().root);
+        }
         else if(pCrawl.isEndOfWord())
             composedAnswer += pCrawl.getChildrenPayload();
         else
             composedAnswer = "NOT FOUND";
+
+        if(composedAnswer.contains("NOT FOUND") && pCrawl.hasPayloadTree() && depth == arraySize)
+            composedAnswer = " {" + searchSubTree(pCrawl.getPayloadTree().getRoot(), "", 0) + "}";
+
 
         return composedAnswer;
     }
