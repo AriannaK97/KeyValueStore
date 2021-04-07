@@ -1,0 +1,9 @@
+# ignored files
+input
+*.txt
+*.iml
+
+# excluded dirs
+/jar
+/out
+.idea
