@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.text.ParseException;
 import java.util.Scanner;
+import java.util.logging.Logger;
+
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
@@ -18,7 +20,10 @@ public class Command {
         this.trie = trie;
     }
 
-    public void readFromStream(Socket s) throws IOException, ParseException {
+    /**
+     * Read and write from stream while connected via socket
+     * */
+    public void communicationViaStream(Socket s) throws IOException, ParseException {
 
         String command;
         String str;
@@ -44,7 +49,11 @@ public class Command {
 
     }
 
+    /**
+     * Parse record as json
+     * */
     private JSONObject jsonParse(String record) throws org.json.simple.parser.ParseException {
+        record = ("{" + record+ "}");
         record = record.replace(";", ",");
         Object obj = new JSONParser().parse(record);
         JSONObject jo = (JSONObject) obj;
@@ -52,13 +61,14 @@ public class Command {
         return jo;
     }
 
+    /**
+     * Read inout file with records right from the command
+     * Used for server debugging.
+     * */
     public Trie readFile(String inputFile) throws FileNotFoundException {
         File file = new File(inputFile);
         Scanner scFile = new Scanner(file);
         String currentLine;
-        String[] wordSplit;
-        String[] payload;
-        String keyId;
 
         while (scFile.hasNextLine()){
             currentLine = ("{" + scFile.nextLine()+ "}");
@@ -74,6 +84,9 @@ public class Command {
     }
 
 
+    /**
+     * Extract the command name and the command argument
+     * */
     private String[] extractCommand(String input){
         String[] _ret = new String[2];
         String[] splitArray = input.split(" ");
@@ -85,16 +98,23 @@ public class Command {
         return _ret;
     }
 
+    /**
+     * Dispatch the proper command given its name
+     * */
     public String commandDispatcher(String commandName, String commandTail) throws ParseException {
         switch (commandName) {
             case "PUT" : return put(commandTail);
             case "GET" : return get(commandTail);
             case "QUERY" : return query(commandTail);
             case "DELETE" : return delete(commandTail);
+            case "STILL_ALIVE?" : return "yes";
         }
         return "Command " + commandName + " not found.";
     }
 
+    /**
+     * Print the json Object
+     * */
     private void printJsonObject(JSONObject jo){
         for (Object key : jo.keySet()) {
             Object keyvalue = jo.get((String) key);
@@ -102,32 +122,45 @@ public class Command {
         }
     }
 
+    /**
+     * Implementation of PUT command
+     * */
     private String put(String commandTail) throws ParseException {
-
-        String currentLine = ("{" + commandTail+ "}");
+//Todo: check if PUT is used only during the population phase of the trie
         try {
             /**
              * In case identical keys appear in the same level, we keep the last appeared one
              * */
-            JSONObject jsonObject = jsonParse(currentLine);
+            JSONObject jsonObject = jsonParse(commandTail);
             //printJsonObject(jsonObject);
             this.trie.insert(jsonObject, this.trie);
         } catch (JSONException | org.json.simple.parser.ParseException e) {
-            throw new RuntimeException(e);
+            Logger.getLogger("ExceptionLog");
+            return "ERROR " + e.getCause();
+            //throw new RuntimeException(e);
         }
 
-        return "ok";
+        return "OK";
     }
 
+    /**
+     * Implementation of GET command
+     * */
     private String get(String commandTail){
         return (commandTail + " : {" + this.trie.search(commandTail, this.trie) + "}");
     }
 
+    /**
+     * Implementation of DELETE command
+     * */
     private String delete(String commandTail){
         trie.delete(this.trie.getRoot(), commandTail, 0);
-        return "deleted";
+        return "";
     }
 
+    /**
+     * Implementation of QUERY command
+     * */
     private String query(String commandTail){
         String[] keyArray = commandTail.split("\\.");
         return (commandTail + " : " + this.trie.querySearch(keyArray, 0, this.trie.getRoot()));

@@ -6,12 +6,16 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 public class PortIPManager {
 
     private int totalNumOfServers;
     private static final Map<Integer, ServerCredentials> IP_PortMap = new HashMap<>();
 
+    /**
+     * Auxiliary class for server information
+     * */
     class ServerCredentials{
         private InetAddress ip;
         private int port;
@@ -63,15 +67,43 @@ public class PortIPManager {
         return IP_PortMap;
     }
 
-    public void checkOnlineServers(int k){
+    /**
+     * Returns true if a sufficient number of servers is still online
+     * */
+    public boolean checkIfSufficientOnlineServers(int k) {
+
         int onlineServerCounter = 0;
+        ServerCredentials serverCredentials;
+        String str;
+
         for (Map.Entry<Integer, ServerCredentials> entry : IP_PortMap.entrySet()){
-            if(entry.getValue().isOnline())
-                onlineServerCounter+=1;
+            try {
+                serverCredentials = entry.getValue();
+                serverCredentials.getDout().writeUTF("STILL_ALIVE?");
+                serverCredentials.getDout().flush();
+                str = serverCredentials.getDin().readUTF();
+                if (str.equals("yes"))
+                    onlineServerCounter += 1;
+            }catch (Exception e){
+                Logger.getLogger("ExceptionLog");
+                entry.getValue().setOnline(false);
+            }
         }
-        if(this.totalNumOfServers - onlineServerCounter >= k)
+
+        /*If no server is left online*/
+        if(onlineServerCounter == 0){
+            System.err.println("WARNING: No server is up and running.\nExit...");
+            System.exit(1);
+        }
+
+        /*If more or equal to k servers are left online*/
+        if(this.totalNumOfServers - onlineServerCounter >= k){
             System.err.println("WARNING: k or more servers are down, therefore there is no guarantee for the correctness of the output. . .");
+            return false;
+        }
+        return true;
     }
+
 
     /**
      * Reads server file and invokes connection to servers

@@ -5,7 +5,7 @@ public class TrieNode {
 
     private TrieNode[] children = new TrieNode[NUM_OF_SYMBOLS];
     private boolean isEndOfWord;
-    private String payload = "-";
+    private Object payload;
     private Trie payloadTree;
 
     TrieNode(){
@@ -24,11 +24,15 @@ public class TrieNode {
     }
 
     public String getChildrenPayload() {
-        if(this.payloadTree == null)
-            return payload;
-        else{
-            return null;
+        if(this.payloadTree == null) {
+            if (this.payload instanceof Long)
+                return String.valueOf(payload);
+            else if (this.payload instanceof Double)
+                return String.valueOf(payload);
+            else if (this.payload instanceof String)
+                return (String)payload;
         }
+        return "-";
     }
 
     public void setChildrenInPosition(int index, TrieNode newNode) {

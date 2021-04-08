@@ -22,7 +22,7 @@ public class Server {
         ServerSocket ss = new ServerSocket(Port, 0, ip);
         Socket s = ss.accept();
 
-        commander.readFromStream(s);
+        commander.communicationViaStream(s);
 
         s.close();
         ss.close();

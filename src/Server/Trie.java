@@ -13,7 +13,6 @@ public class Trie {
     }
 
     public TrieNode getRoot() {
-
         return this.root;
     }
 
@@ -26,9 +25,15 @@ public class Trie {
 
             TrieNode pCrawl = currentTrie.getRoot();
 
+            /*Iterate through the children array of the current node
+             * The position of a valid character (letters (upper and lowercase) and numbers) in the array are
+             * lowercase letters [0, 25]
+             * uppercase letters [26, 51]
+             * numbers [52, 61]
+             * */
             for (level = 0; level < length; level++) {
                 index = ((String) key).charAt(level);
-                index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;
+                index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;    //find the table offset for the current char
 
                 if (pCrawl.getChildrenInPosition(index) == null)
                     pCrawl.setChildrenInPosition(index, new TrieNode());
@@ -39,7 +44,12 @@ public class Trie {
             // mark last node as leaf
             if (!(payload instanceof JSONObject)) {
                 pCrawl.setEndOfWord(true);
-                pCrawl.setEndOfWordPayload((String) payload);
+                if (payload instanceof Long)
+                    pCrawl.setEndOfWordPayload(String.valueOf(payload));
+                else if (payload instanceof Double)
+                    pCrawl.setEndOfWordPayload(String.valueOf(payload));
+                else if (payload instanceof String)
+                    pCrawl.setEndOfWordPayload((String) payload);
             }else{
                 if(pCrawl.getPayloadTree()==null)
                     pCrawl.setPayloadTree(new Trie());
@@ -60,6 +70,12 @@ public class Trie {
         TrieNode pCrawl = currentTrie.getRoot();
         String output = "NOT FOUND";
 
+        /*Search through the children array of the current node iteratively
+         * The position of a valid character (letters (upper and lowercase) and numbers) in the array are
+         * lowercase letters [0, 25]
+         * uppercase letters [26, 51]
+         * numbers [52, 61]
+         * */
         for (level = 0; level < length; level++){
             index = key.charAt(level);
             index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;
@@ -70,15 +86,16 @@ public class Trie {
             pCrawl = pCrawl.getChildrenInPosition(index);
         }
 
+        /*If the node is not end of word search in subtrie else get the node payload/value*/
         if (!pCrawl.isEndOfWord())
-            composedAnswer = searchSubTree(pCrawl.getPayloadTree().getRoot(), "", 0) ;
+            composedAnswer = searchSubTrie(pCrawl.getPayloadTree().getRoot(), "") ;
         else
             composedAnswer = pCrawl.getChildrenPayload();
 
         return composedAnswer;
     }
 
-    public String searchSubTree(TrieNode currentRoot, String prevCharInTrie, int numOfKeysInPrevLevel){
+    public String searchSubTrie(TrieNode currentRoot, String prevCharInTrie){
         String composedAnswer = "";
         String currentString, currentChar;
         TrieNode pCrawl;
@@ -86,23 +103,33 @@ public class Trie {
         int key;
         int index;
 
+        /*Search through the children array of the current node iteratively and their children recursively
+         * The position of a valid character (letters (upper and lowercase) and numbers) in the array are
+         * lowercase letters [0, 25]
+         * uppercase letters [26, 51]
+         * numbers [52, 61]
+         * */
         for(index = 0; index < NUM_OF_SYMBOLS; index++){
+
             if( currentRoot.getChildrenInPosition(index) != null){
                 numOfKeysInLevel += 1;
                 key = (index + 'a' >= 97) && ((index + 'a' <= 122)) ? index + 'a' : (index + 'A' - 26 >= 65)
                         && (index + 'A' - 26 <= 90) ? index + 'A' - 26 : index + '0' - 36;
                 currentChar = Character.toString(key);
                 pCrawl = currentRoot.getChildrenInPosition(index);
+
+                /*If the current level has more than one children (to proper concatenate the characters and create the word)*/
                 if(numOfKeysInLevel > 1){
                     currentChar = prevCharInTrie + currentChar;
                 }
+
+                /*Behave accordingly if the current node has a nested subtrie else descent further on the nodes of the current trie*/
                 if(pCrawl.hasPayloadTree()){
-                    composedAnswer += currentChar + " : {" + searchSubTree(currentRoot.getChildrenInPosition(index).getPayloadTree().getRoot(), currentChar, numOfKeysInLevel) + "}; ";
-                    numOfKeysInLevel = 0;
+                    composedAnswer += currentChar + " : {" + searchSubTrie(currentRoot.getChildrenInPosition(index).getPayloadTree().getRoot(), currentChar) + "}; ";
                 }else {
-                    composedAnswer += currentChar + searchSubTree(currentRoot.getChildrenInPosition(index), currentChar, numOfKeysInLevel);
-                    numOfKeysInLevel = 0;
+                    composedAnswer += currentChar + searchSubTrie(currentRoot.getChildrenInPosition(index), currentChar);
                 }
+                numOfKeysInLevel = 0;
             }
         }
 
@@ -113,6 +140,7 @@ public class Trie {
             composedAnswer += " : \"" + currentString + "\"; ";
 
         return composedAnswer;
+
     }
 
     /**
@@ -125,6 +153,12 @@ public class Trie {
         int arraySize = keysArray.length;
         String composedAnswer = "";
 
+        /*Search through the children array of the current node iteratively
+         * The position of a valid character (letters (upper and lowercase) and numbers) in the array are
+         * lowercase letters [0, 25]
+         * uppercase letters [26, 51]
+         * numbers [52, 61]
+         * */
         for (level = 0; level < length; level++){
             index = keysArray[depth].charAt(level);
             index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;
@@ -137,22 +171,27 @@ public class Trie {
 
         depth+=1;
 
-        if(depth < arraySize && pCrawl.getChildrenPayload()==null) {
+        /*Recur to the child for the next key in QUERY*/
+        if(depth < arraySize && pCrawl.getChildrenPayload()==null)
             composedAnswer += querySearch(keysArray, depth, pCrawl.getPayloadTree().root);
-        }
         else if(pCrawl.isEndOfWord())
             composedAnswer += pCrawl.getChildrenPayload();
         else
             composedAnswer = "NOT FOUND";
 
+        /*If the complex key provided from input does not reach an end of word state,
+         *look linearly the in subtrees if they exist. In any other case it returns NOT FOUND
+         * */
         if(composedAnswer.contains("NOT FOUND") && pCrawl.hasPayloadTree() && depth == arraySize)
-            composedAnswer = " {" + searchSubTree(pCrawl.getPayloadTree().getRoot(), "", 0) + "}";
+            composedAnswer = " {" + searchSubTrie(pCrawl.getPayloadTree().getRoot(), "") + "}";
 
 
         return composedAnswer;
     }
 
-    // Returns true if root has no children, else false
+    /**
+     * Returns true if root has no children, else false
+     * */
     boolean isEmpty(TrieNode currentRoot)
     {
         for (int i = 0; i < NUM_OF_SYMBOLS; i++)
@@ -165,19 +204,18 @@ public class Trie {
      * Delete the top level key of the trie.
      * */
     public TrieNode delete(TrieNode currentRoot, String key, int depth) {
-        // If tree is empty
+        /*If tree is empty*/
         if (currentRoot == null)
             return null;
 
-        // If last character of key is being processed
+        /*last character of key is being processed*/
         if (depth == key.length()) {
 
-            // This node is no more end of word after
-            // removal of given key
+            /*The node is not end of word any longer*/
             if (currentRoot.isEndOfWord())
                 currentRoot.setEndOfWord(false);
 
-            // If given is not prefix of any other word
+            /*The given given is not prefix of any other word*/
             if (isEmpty(currentRoot)) {
                 currentRoot = null;
             }
@@ -185,14 +223,12 @@ public class Trie {
             return currentRoot;
         }
 
-        // If not last character, recur for the child
-        // obtained using ASCII value
+        /*Recur for the child, if it is not hte last character*/
         int index = key.charAt(depth);
         index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;
         currentRoot.setChildrenInPosition(index, delete(currentRoot.getChildrenInPosition(index), key, depth + 1));
 
-        // If root does not have any child (its only child got
-        // deleted), and it is not end of another word.
+        /*In case the root is childless and not endOfWord*/
         if (isEmpty(currentRoot) && !currentRoot.isEndOfWord()) {
             currentRoot = null;
         }

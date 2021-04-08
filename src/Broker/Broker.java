@@ -49,10 +49,10 @@ public class Broker {
 
                 for (Map.Entry<Integer, ServerCredentials> entry : kServers.entrySet()){
                     serverCredentials = entry.getValue();
-                    serverCredentials.getDout().writeUTF("PUT "+currentLine);
+                    serverCredentials.getDout().writeUTF("PUT "+ currentLine);
                     serverCredentials.getDout().flush();
                     str = serverCredentials.getDin().readUTF();
-                    //System.out.println(entry.getValue().getPort() + " " + str);
+                    System.out.println(entry.getValue().getPort() + " " + str);
 
                 }
             }
@@ -80,43 +80,49 @@ public class Broker {
         command = sc.nextLine();
         while (!str.equals("stop")) {
 
-            portIPManager.checkOnlineServers(k);
+            if (!portIPManager.checkIfSufficientOnlineServers(k) && command.contains("DELETE")) {
+                System.err.println("Cannot proceed to delete record");
+                System.out.println("Type next command . . .");
+                command = sc.nextLine();
+                continue;
+            }
 
             for (Map.Entry<Integer, ServerCredentials> entry : PortMap.entrySet()) {
                 try {
-                    serverCredentials = entry.getValue();
-                    serverCredentials.getDout().writeUTF(command);
-                    serverCredentials.getDout().flush();
-                    str = serverCredentials.getDin().readUTF();
-                    if (str.equals("stop")) {
-                        entry.getValue().setOnline(false);
-                        entry.getValue().getDin().close();
-                        entry.getValue().getDout().close();
-                        entry.getValue().getSocket().close();
+                    if(entry.getValue().isOnline()) {
+                        serverCredentials = entry.getValue();
+                        serverCredentials.getDout().writeUTF(command);
+                        serverCredentials.getDout().flush();
+                        str = serverCredentials.getDin().readUTF();
+                        if (str.equals("stop")) {
+                            entry.getValue().setOnline(false);
+                            entry.getValue().getDin().close();
+                            entry.getValue().getDout().close();
+                            entry.getValue().getSocket().close();
+                        }
+
+                        if (!answeredQuery && !str.contains("NOT FOUND") && !str.equals("stop")) {
+                            answeredQuery = true;
+                            System.out.println(str);
+                        }
                     }
 
-                    if(!answeredQuery && !str.contains("NOT FOUND") && !str.equals("stop")) {
-                        answeredQuery = true;
-                        System.out.println("Server with IPAddress " + serverCredentials.getIp() + " listening to port "
-                                + serverCredentials.getPort() + " answered:\n\t" + str);
-                    }
-
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     Logger.getLogger("ExceptionLog");
                     entry.getValue().setOnline(false);
-                    portIPManager.checkOnlineServers(k);
+                    portIPManager.checkIfSufficientOnlineServers(k);
                 }
 
             }
 
-            if(!answeredQuery)
+            if (!answeredQuery)
                 System.out.println("NOT FOUND");
-
-            answeredQuery=false;
+            answeredQuery = false;
             System.out.println("Type next command . . .");
             command = sc.nextLine();
+
         }
+
     }
 
 
