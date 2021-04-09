@@ -9,6 +9,9 @@ public class Server {
     private static final Trie trie = new Trie();
     private static final Command commander = new Command(trie);
 
+    /**
+     * Server main class
+     * */
     public static void main(String[] args)throws Exception{
 
         if(args.length != 4){

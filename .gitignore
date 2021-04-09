@@ -1,5 +1,6 @@
 # ignored files
 input
+inputFile.txt
 *.txt
 *.iml
 
@@ -7,3 +8,4 @@ input
 /jar
 /out
 .idea
+venv

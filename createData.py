@@ -17,21 +17,23 @@ class DataCreator:
         self.m = m
         self.curd = d
 
-    """ Get all the available keys as specified in the file given at input """
+    # Get all the available keys as specified in the file given at input
     def get_available_keys(self):
         f = open(self.keyfile, "r")
         keys = f.readlines()
         f.close()
+        if len(keys) > self.m:
+            self.m = len(keys)
         return keys
 
-    """ Check for key duplication """
+    # Check for key duplication
     def is_key_duplicate(self, currentKey):
         for key in self.usedKeysListPerLevel:
             if key is currentKey:
                 return True
         return False
 
-    """ Generate a matching value for the type specified for the selected key """
+    # Generate a matching value for the type specified for the selected key
     def generate_key_matching_type_value(self, key):
         if "string" in key:
             return ''.join(random.choices(string.ascii_uppercase + string.digits, k=self.l))
@@ -40,13 +42,13 @@ class DataCreator:
         if "float" in key:
             return random.uniform(0, 1000000000)
 
-    """ select a random key from the available ones given at input """
+    # Select a random key from the available ones given at input
     def get_random_key(self):
         rand = random.randint(0, len(self.keys)-1)
         key = self.keys[rand]
         return key
 
-    """ Generate one record """
+    # Generate one record
     def generate_record(self, nesting_level, record=""):
 
         key = self.get_random_key()
@@ -61,7 +63,7 @@ class DataCreator:
         chance_to_nest = random.randint(0, 4)
         if chance_to_nest == 0:
             self.curd -= 1
-            curm = random.randint(0, self.m)        #number of keys inside the current level
+            curm = random.randint(0, self.m)        # number of keys inside the current level
             for i in range(curm):
                 if i == 0:
                     record = self.generate_record(curm, record)
@@ -78,9 +80,8 @@ class DataCreator:
                 return "\"" + str(key_split[0]) + "\": " + str(random.randint(0, 10000))
             if "float" in key:
                 return "\"" + str(key_split[0]) + "\": " +  str(random.uniform(0, 10000))
-            #return "\"" + str(key_split[0]) + "\":\"" + str(self.generate_key_matching_type_value(key)) + "\""
 
-    """ Generate the total number of records """
+    # Generate the total number of records
     def generator(self):
         self.keys = self.get_available_keys()
         for line in range(self.n):
@@ -101,7 +102,7 @@ class DataCreator:
         self.outfile.close()
 
 
-""" Check input arguments for validity """
+# Check input arguments for validity
 def parse_input_args(argv):
     try:
         opts, args = getopt.getopt(argv, "k:n:d:l:m:", ["k=", "n=", "d=", "l=", "m="])

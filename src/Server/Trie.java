@@ -16,7 +16,10 @@ public class Trie {
         return this.root;
     }
 
-    void insert(JSONObject jo, Trie currentTrie){
+    /**
+     * Insert if the key value does nor already exist in the trie
+     * */
+    public String insert(JSONObject jo, Trie currentTrie){
         for (Object key: jo.keySet()){
             Object payload = jo.get((String) key);
             int level;
@@ -31,36 +34,41 @@ public class Trie {
              * uppercase letters [26, 51]
              * numbers [52, 61]
              * */
-            for (level = 0; level < length; level++) {
-                index = ((String) key).charAt(level);
-                index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;    //find the table offset for the current char
+            if(search((String)key, currentTrie).contains("NOT FOUND")) {
+                for (level = 0; level < length; level++) {
+                    index = ((String) key).charAt(level);
+                    index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;    //find the table offset for the current char
 
-                if (pCrawl.getChildrenInPosition(index) == null)
-                    pCrawl.setChildrenInPosition(index, new TrieNode());
+                    if (pCrawl.getChildrenInPosition(index) == null)
+                        pCrawl.setChildrenInPosition(index, new TrieNode());
 
-                pCrawl = pCrawl.getChildrenInPosition(index);
-            }
+                    pCrawl = pCrawl.getChildrenInPosition(index);
+                }
 
-            // mark last node as leaf
-            if (!(payload instanceof JSONObject)) {
-                pCrawl.setEndOfWord(true);
-                if (payload instanceof Long)
-                    pCrawl.setEndOfWordPayload(String.valueOf(payload));
-                else if (payload instanceof Double)
-                    pCrawl.setEndOfWordPayload(String.valueOf(payload));
-                else if (payload instanceof String)
-                    pCrawl.setEndOfWordPayload((String) payload);
+                // mark last node as leaf
+                if (!(payload instanceof JSONObject)) {
+                    pCrawl.setEndOfWord(true);
+                    if (payload instanceof Long)
+                        pCrawl.setEndOfWordPayload(String.valueOf(payload));
+                    else if (payload instanceof Double)
+                        pCrawl.setEndOfWordPayload(String.valueOf(payload));
+                    else if (payload instanceof String)
+                        pCrawl.setEndOfWordPayload((String) payload);
+                } else {
+                    if (pCrawl.getPayloadTree() == null)
+                        pCrawl.setPayloadTree(new Trie());
+                    insert((JSONObject) payload, pCrawl.getPayloadTree());
+                }
             }else{
-                if(pCrawl.getPayloadTree()==null)
-                    pCrawl.setPayloadTree(new Trie());
-                insert((JSONObject) payload, pCrawl.getPayloadTree());
+                return "Duplicate record - Insert failed";
             }
         }
+        return "OK";
     }
 
 
     /**
-     * Search and return the value of top level key only and return it if foungetChildrenPayload()==nulld
+     * Search and return the value of top level key only and return it if found getChildrenPayload()==null
      * */
     public String search(String key, Trie currentTrie) {
         int level;
@@ -129,10 +137,10 @@ public class Trie {
                 }else {
                     composedAnswer += currentChar + searchSubTrie(currentRoot.getChildrenInPosition(index), currentChar);
                 }
-                numOfKeysInLevel = 0;
             }
         }
 
+        numOfKeysInLevel = 0;
         currentString = currentRoot.getChildrenPayload();
         if (currentString == null)
             composedAnswer += " : { } ";

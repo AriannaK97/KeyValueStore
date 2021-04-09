@@ -51,6 +51,8 @@ public class Command {
 
     /**
      * Parse record as json
+     * If the record given has duplicate same level keys, the last same key that appears is considered
+     * valid and is actually stored. The previous ones are discarded.
      * */
     private JSONObject jsonParse(String record) throws org.json.simple.parser.ParseException {
         record = ("{" + record+ "}");
@@ -124,20 +126,28 @@ public class Command {
 
     /**
      * Implementation of PUT command
+     * In case a user tries to insert a record with the same id key (eg. personX) as an existing record,
+     * the app discards the insertion and returns an error message.
      * */
     private String put(String commandTail) throws ParseException {
-//Todo: check if PUT is used only during the population phase of the trie
         try {
-            /**
-             * In case identical keys appear in the same level, we keep the last appeared one
-             * */
+
+            // In case identical keys appear in the same level, we keep the last appeared one
             JSONObject jsonObject = jsonParse(commandTail);
+            String _ret = this.trie.insert(jsonObject, this.trie);
             //printJsonObject(jsonObject);
-            this.trie.insert(jsonObject, this.trie);
+
+            if(_ret.equals("OK")){
+                return "OK";
+            } else if (_ret.equals("Duplicate record - Insert failed")) {
+                return "Duplicate record - Insert failed";
+            }
+
         } catch (JSONException | org.json.simple.parser.ParseException e) {
+
             Logger.getLogger("ExceptionLog");
-            return "ERROR " + e.getCause();
-            //throw new RuntimeException(e);
+            return "ERROR: Invalid input format";
+
         }
 
         return "OK";
