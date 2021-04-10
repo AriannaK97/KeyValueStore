@@ -115,8 +115,13 @@ public class Broker {
 
             }
 
-            if (!answeredQuery)
+            if(command.equals("stop")){
+                System.out.println("Bye Bye...");
+                System.exit(0);
+            }
+            else if (!answeredQuery)
                 System.out.println("NOT FOUND");
+
             answeredQuery = false;
             System.out.println("Type next command . . .");
             command = sc.nextLine();

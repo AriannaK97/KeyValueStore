@@ -61,4 +61,14 @@ public class TrieNode {
     public void setPayloadTree(Trie payloadTree) {
         this.payloadTree = payloadTree;
     }
+
+    public int getNumOfChildren(){
+        int numOfChildren = 0;
+        for (int i = 0; i < NUM_OF_SYMBOLS; i++){
+            if (children[i] != null){
+                numOfChildren += 1;
+            }
+        }
+        return numOfChildren;
+    }
 }

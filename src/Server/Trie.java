@@ -55,7 +55,7 @@ public class Trie {
                     else if (payload instanceof String)
                         pCrawl.setEndOfWordPayload((String) payload);
                 } else {
-                    if (pCrawl.getPayloadTree() == null)
+                    if (!pCrawl.hasPayloadTree())
                         pCrawl.setPayloadTree(new Trie());
                     insert((JSONObject) payload, pCrawl.getPayloadTree());
                 }
@@ -95,10 +95,12 @@ public class Trie {
         }
 
         /*If the node is not end of word search in subtrie else get the node payload/value*/
-        if (!pCrawl.isEndOfWord())
-            composedAnswer = searchSubTrie(pCrawl.getPayloadTree().getRoot(), "") ;
-        else
+        if (!pCrawl.isEndOfWord() && pCrawl.hasPayloadTree())
+            composedAnswer = searchSubTrie(pCrawl.getPayloadTree().getRoot(), "");
+        else if (pCrawl.isEndOfWord())
             composedAnswer = pCrawl.getChildrenPayload();
+        else
+            composedAnswer = output;
 
         return composedAnswer;
     }
@@ -127,13 +129,13 @@ public class Trie {
                 pCrawl = currentRoot.getChildrenInPosition(index);
 
                 /*If the current level has more than one children (to proper concatenate the characters and create the word)*/
-                if(numOfKeysInLevel > 1){
+                if(numOfKeysInLevel > 1 ){
                     currentChar = prevCharInTrie + currentChar;
                 }
 
                 /*Behave accordingly if the current node has a nested subtrie else descent further on the nodes of the current trie*/
                 if(pCrawl.hasPayloadTree()){
-                    composedAnswer += currentChar + " : {" + searchSubTrie(currentRoot.getChildrenInPosition(index).getPayloadTree().getRoot(), currentChar) + "}; ";
+                    composedAnswer += currentChar + " : {" + searchSubTrie(currentRoot.getChildrenInPosition(index).getPayloadTree().getRoot(), "") + "}; ";
                 }else {
                     composedAnswer += currentChar + searchSubTrie(currentRoot.getChildrenInPosition(index), currentChar);
                 }
@@ -142,9 +144,9 @@ public class Trie {
 
         numOfKeysInLevel = 0;
         currentString = currentRoot.getChildrenPayload();
-        if (currentString == null)
+        if (currentRoot.isEndOfWord() && currentString == null)
             composedAnswer += " : { } ";
-        else if (!currentString.equals("-"))
+        else if(currentRoot.isEndOfWord())
             composedAnswer += " : \"" + currentString + "\"; ";
 
         return composedAnswer;
@@ -180,7 +182,7 @@ public class Trie {
         depth+=1;
 
         /*Recur to the child for the next key in QUERY*/
-        if(depth < arraySize && pCrawl.getChildrenPayload()==null)
+        if(depth < arraySize && pCrawl.getChildrenPayload().equals("-") && pCrawl.hasPayloadTree())
             composedAnswer += querySearch(keysArray, depth, pCrawl.getPayloadTree().root);
         else if(pCrawl.isEndOfWord())
             composedAnswer += pCrawl.getChildrenPayload();
@@ -223,6 +225,10 @@ public class Trie {
             if (currentRoot.isEndOfWord())
                 currentRoot.setEndOfWord(false);
 
+            /*The node does not have any subTrees*/
+            if (currentRoot.hasPayloadTree())
+                currentRoot.setPayloadTree(null);
+
             /*The given given is not prefix of any other word*/
             if (isEmpty(currentRoot)) {
                 currentRoot = null;
@@ -231,7 +237,7 @@ public class Trie {
             return currentRoot;
         }
 
-        /*Recur for the child, if it is not hte last character*/
+        /*Recur for the child, if it is not the last character*/
         int index = key.charAt(depth);
         index = (index - 'a' >= 0) ? index - 'a' : (index - 'A' >= 0) ? index - 'A' + 26 : index - '0' + 36;
         currentRoot.setChildrenInPosition(index, delete(currentRoot.getChildrenInPosition(index), key, depth + 1));

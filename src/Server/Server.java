@@ -1,6 +1,7 @@
 package Server;
 
 import java.net.*;
+import org.json.JSONException;
 
 public class Server {
 

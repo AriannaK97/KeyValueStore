@@ -5,7 +5,6 @@ import java.net.Socket;
 import java.text.ParseException;
 import java.util.Scanner;
 import java.util.logging.Logger;
-
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
