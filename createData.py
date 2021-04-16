@@ -1,3 +1,4 @@
+import os
 import sys
 import getopt
 import string
@@ -7,7 +8,11 @@ import random
 class DataCreator:
 
     def __init__(self, keyfile, n, d, l, m):
-        self.outfile = open("inputFile.txt", "a")
+        self.filename = "inputFile.txt"
+        if self.is_file_empty():
+            self.outfile = open("inputFile.txt", "a")
+        else:
+            self.outfile = self.delete_file_content()
         self.keyfile = keyfile
         self.usedKeysListPerLevel = []
         self.keys = []
@@ -16,6 +21,15 @@ class DataCreator:
         self.l = l
         self.m = m
         self.curd = d
+
+    def is_file_empty(self):
+        # Check if file exist and it is empty by confirming if its size is 0 bytes
+        return os.path.exists(self.filename) and os.stat(self.filename).st_size == 0
+
+    def delete_file_content(self):
+        self.outfile = open("inputFile.txt", "a")
+        self.outfile.close()
+        return open(self.filename, "w")
 
     # Get all the available keys as specified in the file given at input
     def get_available_keys(self):

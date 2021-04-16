@@ -48,11 +48,17 @@ public class Broker {
                 Map<Integer, ServerCredentials> kServers = selectRandom_k_Servers();
 
                 for (Map.Entry<Integer, ServerCredentials> entry : kServers.entrySet()){
-                    serverCredentials = entry.getValue();
-                    serverCredentials.getDout().writeUTF("PUT "+ currentLine);
-                    serverCredentials.getDout().flush();
-                    str = serverCredentials.getDin().readUTF();
-                    System.out.println(entry.getValue().getPort() + " " + str);
+                    try{
+                        serverCredentials = entry.getValue();
+                        serverCredentials.getDout().writeUTF("PUT "+ currentLine);
+                        serverCredentials.getDout().flush();
+                        str = serverCredentials.getDin().readUTF();
+                        System.out.println(entry.getValue().getPort() + " " + str);
+                    }catch (Exception e){
+                        Logger.getLogger("ExceptionLog");
+                        entry.getValue().setOnline(false);
+                        System.err.println("Server with ip: " + entry.getValue().getIp() + " listening to port: " + entry.getValue().getPort() + " is down...");
+                    }
 
                 }
             }
@@ -60,6 +66,20 @@ public class Broker {
         }catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void printAvailableCommands(){
+        System.out.println("""
+                
+                --------------------------------------------------------
+                Available User Commands
+                ________________________________________________________
+                1. GET <key>
+                2. QUERY <keypath>
+                3. DELETE <key>
+                4. PUT <newRecord>
+                5. stop 
+                ________________________________________________________""");
     }
 
 
@@ -76,6 +96,7 @@ public class Broker {
         String str = "";
         boolean answeredQuery = false;
 
+        printAvailableCommands();
         System.out.println("Type next command . . .");
         command = sc.nextLine();
         while (!str.equals("stop")) {
@@ -123,6 +144,7 @@ public class Broker {
                 System.out.println("NOT FOUND");
 
             answeredQuery = false;
+            printAvailableCommands();
             System.out.println("Type next command . . .");
             command = sc.nextLine();
 
@@ -157,6 +179,11 @@ public class Broker {
 
         k = Integer.parseInt(args[5]);
         portIPManager.readServerFile(args[1]);
+
+        if(k > portIPManager.getTotalNumOfServers()){
+            k = portIPManager.getTotalNumOfServers();
+        }
+
         sendLineToServerToIndex(args[3]);
         dispatchCommandToServers();
 

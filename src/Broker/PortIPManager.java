@@ -25,12 +25,16 @@ public class PortIPManager {
         private boolean isOnline;
 
         ServerCredentials(InetAddress ip, int port) throws IOException {
-            this.ip = ip;
-            this.port = port;
-            this.socket = new Socket(ip, port);
-            this.din = new DataInputStream(socket.getInputStream());
-            this.dout = new DataOutputStream(socket.getOutputStream());
-            this.isOnline = true;
+            try{
+                this.ip = ip;
+                this.port = port;
+                this.socket = new Socket(ip, port);
+                this.din = new DataInputStream(socket.getInputStream());
+                this.dout = new DataOutputStream(socket.getOutputStream());
+                this.isOnline = true;
+            }catch (IOException ioException){
+                throw new IOException("Server with ip: " + ip.toString() + " listening to port: " + port + " is down. Connection refused.");
+            }
         }
 
         public boolean isOnline() {
@@ -62,6 +66,8 @@ public class PortIPManager {
         }
 
     }
+
+    public int getTotalNumOfServers() { return totalNumOfServers; }
 
     public Map<Integer, ServerCredentials> getIP_PortMap() {
         return IP_PortMap;
@@ -122,9 +128,13 @@ public class PortIPManager {
         while (sc.hasNextLine()){
             currentLine = sc.nextLine();
             splitArray = currentLine.split(" ");
-            newCredentials = new ServerCredentials(InetAddress.getByName(splitArray[0]), Integer.parseInt(splitArray[1]));
-            IP_PortMap.put(id, newCredentials);
-            id+=1;
+            try{
+                newCredentials = new ServerCredentials(InetAddress.getByName(splitArray[0]), Integer.parseInt(splitArray[1]));
+                IP_PortMap.put(id, newCredentials);
+                id+=1;
+            }catch (IOException ioException){
+                System.err.println(ioException.getMessage());
+            }
         }
 
         this.totalNumOfServers = IP_PortMap.size();

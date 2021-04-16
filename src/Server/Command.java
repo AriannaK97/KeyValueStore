@@ -33,12 +33,20 @@ public class Command {
 
         command=din.readUTF();
         while(!command.equals("stop")){
-            System.out.println("client says: " + command);
-            splitArray = extractCommand(command);
-            str = commandDispatcher(splitArray[0], splitArray[1]);
+
+            try{
+                System.out.println("client says: " + command);
+                splitArray = extractCommand(command);
+                str = commandDispatcher(splitArray[0], splitArray[1]);
+            }catch (IOException io){
+                str = io.getMessage();
+                System.err.println(str);
+            }
+
             dout.writeUTF(str);
             dout.flush();
-            command=din.readUTF();
+            command = din.readUTF();
+
         }
 
         str = "stop";
@@ -49,17 +57,36 @@ public class Command {
     }
 
     /**
+     * Extract the command name and the command argument
+     * */
+    private String[] extractCommand(String input) throws IOException {
+        String[] _ret = new String[2];
+        String[] splitArray = input.split(" ");
+        /*All queries have two parts, the type of query and the tail anything else is considered as invalid*/
+        if (splitArray[0].equals("PUT") || splitArray[0].equals("STILL_ALIVE?") || splitArray.length == 2 ) {
+            _ret[0] = splitArray[0];
+            _ret[1] = "";
+            for (int i = 1; i < splitArray.length; i++){
+                _ret[1] += splitArray[i];
+            }
+        }else{
+            throw new IOException("Invalid Query");
+        }
+        return _ret;
+    }
+
+    /**
      * Parse record as json
      * If the record given has duplicate same level keys, the last same key that appears is considered
      * valid and is actually stored. The previous ones are discarded.
      * */
     private JSONObject jsonParse(String record) throws org.json.simple.parser.ParseException {
-        record = ("{" + record+ "}");
-        record = record.replace(";", ",");
-        Object obj = new JSONParser().parse(record);
-        JSONObject jo = (JSONObject) obj;
-        System.out.println(jo);
-        return jo;
+            record = ("{" + record+ "}");
+            record = record.replace(";", ",");
+            Object obj = new JSONParser().parse(record);
+            JSONObject jo = (JSONObject) obj;
+            System.out.println(jo);
+            return jo;
     }
 
     /**
@@ -82,21 +109,6 @@ public class Command {
             }
         }
         return trie;
-    }
-
-
-    /**
-     * Extract the command name and the command argument
-     * */
-    private String[] extractCommand(String input){
-        String[] _ret = new String[2];
-        String[] splitArray = input.split(" ");
-        _ret[0] = splitArray[0];
-        _ret[1] = "";
-        for (int i = 1; i < splitArray.length; i++){
-            _ret[1] += splitArray[i];
-        }
-        return _ret;
     }
 
     /**
@@ -143,8 +155,8 @@ public class Command {
             }
 
         } catch (JSONException | org.json.simple.parser.ParseException e) {
-
             Logger.getLogger("ExceptionLog");
+            System.err.println("ERROR: Invalid input format");
             return "ERROR: Invalid input format";
 
         }
